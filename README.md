@@ -1,14 +1,17 @@
-# Ollama-MMLU-Pro
+# OAI-API-MMLU-Pro
 
-This is a modified version of run_gpt4o.py from [TIGER-AI-Lab/MMLU-Pro](https://github.com/TIGER-AI-Lab/MMLU-Pro), and it lets you run [MMLU-Pro](https://huggingface.co/datasets/TIGER-Lab/MMLU-Pro) benchmark via the OpenAI Chat Completion API. It's tested on Ollama and Llama.cpp, but it should also work with LMStudio, Koboldcpp, Oobabooga with openai extension, etc.
+This is a modified version of https://github.com/chigkim/Ollama-MMLU-Pro benchmark via the OpenAI Chat Completion API. Works great for VLLM or Aphrodite engine for super fast batching inference.
 
-<a href="https://colab.research.google.com/github/chigkim/Ollama-MMLU-Pro/blob/main/Ollama_MMLU_Pro.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
-
-I kept the  testing and scoring  method exactly the same as the original script, adding only a few features to simplify running the test and displaying the results. To see    the exact changes, compare between mmlu-pro branch against main with git diff:
+The  testing and scoring  method is exactly the same as the original script from TIGER-LAB, adding only a few features to simplify running the test and displaying the results. To see the exact changes, compare between mmlu-pro branch against main with git diff:
 
 ```bash
 git diff mmlu-pro..main -- run_openai.py
 ```
+
+This fork adds support and the dataset for Indonesian MMLU-Pro testing and also some small fixes like: 
+- Prevent errors when there is zero random guesses.
+- Ignore words inside brackets of answer and only take the letter as answer.
+- Include square brackets [ ] for answer format as well as regular brackets ( ).
 
 ## Usage
 
@@ -16,7 +19,7 @@ Change the config.toml according to your setup.
 
 ```shell
 pip install -r requirements.txt
-python run_openai.py
+python run_openai.py # Or run_openai_id.py for Indonesian.
 ```
 
 You can also override   settings in configuration file    with  command line flags like --model, ----category, etc. For example, if you   specify `--model phi3`, all the settings  from configuration file will be loaded except model. See `python run_openai.py -h` for more info.
