@@ -162,5 +162,4 @@ cython_debug/
 #.idea/
 
 eval_results/
-
-*.toml
+configs/

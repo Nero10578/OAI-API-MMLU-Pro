@@ -30,3 +30,36 @@ You can also override   settings in configuration file    with  command line fla
 * "Adjusted Score Without Random Guesses" subtracts all random guesses from the correct answers and the total answers.
 * The last overall   score in the table  is calculated as: the total number of correct answers across all categories / the total number of all attempts across all categories * 100.
 * All the   scores in percentage are rounded numbers.
+
+## Example config file
+```yaml
+[server]
+url = "http://localhost:8000/v1"
+api_key = "api key"
+model = "llama3"
+timeout = 600.0
+
+[inference]
+# Ssettings   below are from evaluate_from_local.py for VLLM  on TIGER-AI-Lab/MMLU-Pro
+temperature = 0.0
+top_p = 1.0 # not specified but  default for VLLM
+max_tokens = 1024
+
+# The variable {subject} will be replaced with appropriate value in  runtime.
+system_prompt = "You are an expert assitant AI that knows everything. You are tasked with answering a multiple-choice question. The following is a multiple choice question (with answers) about {subject}. Give your final answer in the format of `The answer is (chosen answer)`."
+
+# "single_chat" inserts all the COT examples and question into a single message. Default  style for GPT-4O script, but raises a lot of format issues especially for small models.
+# "multi_chat" inserts COT examples into multi-turn messages. Use for instruct/chat models.
+# "no_chat" uses v1/completion api. Use for non-instruct/chat model.
+style = "multi_chat"
+
+[test]
+categories = ['biology', 'business', 'chemistry', 'computer science', 'economics', 'engineering', 'health', 'history', 'law', 'math', 'philosophy', 'physics', 'psychology', 'other']
+parallel = 16
+
+[log]
+# Verbosity between 0-2
+verbosity = 0
+# If true, logs exact prompt sent to the model in the test result files.
+log_prompt = true
+```
