@@ -118,11 +118,21 @@ def get_completion(prompt):
 
 
 def load_mmlu_pro():
-	dataset = load_dataset("TIGER-Lab/MMLU-Pro")
-	test_df, val_df = dataset["test"], dataset["validation"]
-	test_df = preprocess(test_df)
-	val_df = preprocess(val_df)
-	return test_df, val_df
+    test_questions = []
+    with open('MMLU-Pro-Test.json', 'r') as f:
+        for line in f:
+            question = json.loads(line)
+            test_questions.append(question)
+    test_df = preprocess(test_questions)
+
+    val_questions = []
+    with open('MMLU-Pro-Validation.json', 'r') as f:
+        for line in f:
+            question = json.loads(line)
+            val_questions.append(question)
+    val_df = preprocess(val_questions)
+    
+    return test_df, val_df
 
 
 def preprocess(test_df):
@@ -202,32 +212,30 @@ def no_chat_prompt(cot_examples, question, options, no_system=False):
 
 
 def extract_answer(text):
-	pattern = r"answer is \(?([ABCDEFGHIJ])\)?"
-	match = re.search(pattern, text)
-	if match:
-		return match.group(1)
-	else:
-		return extract_again(text)
-
+    pattern = r"answer is \(.*?([ABCDEFGHIJ])\)?|\[.*?([ABCDEFGHIJ])\]"
+    match = re.search(pattern, text, re.IGNORECASE)
+    if match:
+        return match.group(1) if match.group(1) else match.group(2)
+    else:
+        return extract_again(text)
 
 def extract_again(text):
-	pattern = r".*[aA]nswer:\s*\(?([A-J])\)?"
-	match = re.search(pattern, text)
-	if match:
-		return match.group(1)
-	else:
-		return extract_final(text)
-
+    pattern = r".*[aA]nswer:\s*\(?.*?([A-J])\)?|\[.*?([A-J])\]"
+    match = re.search(pattern, text, re.IGNORECASE)
+    if match:
+        return match.group(1) if match.group(1) else match.group(2)
+    else:
+        return extract_final(text)
 
 def extract_final(text):
-	pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
-	match = re.search(pattern, text, re.DOTALL)
-	if match:
-		return match[0]
-	else:
-		if config["log"]["verbosity"] >= 1:
-			print("Extraction failed:\n", text)
-		return None
+    pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
+    match = re.search(pattern, text, re.IGNORECASE)
+    if match:
+        return match[0]
+    else:
+        if config["log"]["verbosity"] >= 1:
+            print("Extraction failed:\n", text)
+        return None
 
 
 def run_single_question(single_question, cot_examples_dict, exist_result):
@@ -385,7 +393,11 @@ def print_score(label, corr, wrong):
 		corr = int(corr)
 		wrong = int(wrong)
 		total = corr + wrong
-		acc = corr / total * 100
+		if corr > 0.0:
+			acc = corr / total * 100
+		else:
+			acc = 0.0
+
 		log(f"{label}, {corr}/{total}, {acc:.2f}%")
 	except Exception as e:
 		log(f"{label}, {e} error")
