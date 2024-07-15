@@ -413,7 +413,12 @@ def save_summary(category_record, output_summary_path, lock, report=False):
 		category_record[k]["acc"] = cat_acc
 		total_corr += v["corr"]
 		total_wrong += v["wrong"]
-	acc = total_corr / (total_corr + total_wrong)
+
+	if total_corr > 0.0:
+		acc = total_corr / (total_corr + total_wrong)
+	else:
+		acc = 0.0
+		
 	category_record["total"] = {"corr": total_corr, "wrong": total_wrong, "acc": acc}
 	if report:
 		print_score("Total", total_corr, total_wrong)
