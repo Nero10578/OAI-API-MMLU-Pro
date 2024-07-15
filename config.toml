@@ -24,6 +24,7 @@ style = "multi_chat"
 [test]
 categories = ['biology', 'business', 'chemistry', 'computer science', 'economics', 'engineering', 'health', 'history', 'law', 'math', 'philosophy', 'physics', 'psychology', 'other']
 parallel = 16
+cot = true
 
 [log]
 # Verbosity between 0-2

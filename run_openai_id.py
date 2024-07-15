@@ -46,6 +46,12 @@ parser.add_argument(
 	help="Writes exact prompt and response into log.txt",
 	action="store_true",
 )
+parser.add_argument(
+	"--cot",
+	help="Use COT instructions",
+	action="store_true",
+)
+
 args = parser.parse_args()
 config = toml.load(open(args.config))
 if args.url:
@@ -60,6 +66,8 @@ if args.category:
 	config["test"]["categories"] = [args.category]
 if args.parallel:
 	config["test"]["parallel"] = args.parallel
+if args.cot:
+	config["test"]["cot"] = args.cot
 if args.verbosity:
 	config["log"]["verbosity"] = args.verbosity
 if args.log_prompt:
@@ -240,6 +248,7 @@ def extract_final(text):
 
 def run_single_question(single_question, cot_examples_dict, exist_result):
 	exist = True
+	cot_examples = []
 	q_id = single_question["question_id"]
 	for each in exist_result:
 		if (
@@ -251,7 +260,8 @@ def run_single_question(single_question, cot_examples_dict, exist_result):
 			return None, None, None, exist
 	exist = False
 	category = single_question["category"]
-	cot_examples = cot_examples_dict[category]
+	if config["test"]["cot"]:
+		cot_examples = cot_examples_dict[category]
 	question = single_question["question"]
 	options = single_question["options"]
 	try:
