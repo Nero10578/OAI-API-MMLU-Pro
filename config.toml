@@ -11,7 +11,10 @@ top_p = 1.0 # not specified but  default for VLLM
 max_tokens = 1024
 
 # The variable {subject} will be replaced with appropriate value in  runtime.
-system_prompt = "You are an expert assitant AI that knows everything. You are tasked with answering a multiple-choice question. The following is a multiple choice question (with answers) about {subject}. Give your final answer in the format of `The answer is (chosen answer)`."
+system_prompt = "You are an expert that knows everything. You are tasked with answering a multiple-choice question. The following is a multiple choice question (with answers) about {subject}. Give your final answer in the format of `The answer is (chosen answer)`."
+
+# Indo system prompt
+# system_prompt = "Anda adalah seseorang yang pintar dan mengetahui segalanya. Anda diberi perintah untuk menjawab pertanyaan pilihan ganda. Berikut adalah pertanyaan pilihan ganda tentang {subject}. Jawab dengan format: 'Jawabannya adalah (pilihan jawaban)'."
 
 # "single_chat" inserts all the COT examples and question into a single message. Default  style for GPT-4O script, but raises a lot of format issues especially for small models.
 # "multi_chat" inserts COT examples into multi-turn messages. Use for instruct/chat models.
