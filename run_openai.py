@@ -229,7 +229,7 @@ def extract_again(text):
 
 def extract_final(text):
     pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
-    match = re.search(pattern, text, re.IGNORECASE)
+    match = re.search(pattern, text, re.DOTALL)
     if match:
         return match[0]
     else:
