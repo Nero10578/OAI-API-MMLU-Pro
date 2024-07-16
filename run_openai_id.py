@@ -219,26 +219,20 @@ def no_chat_prompt(cot_examples, question, options, no_system=False):
 	return prompt
 
 def extract_answer(text):
-	lowertext = text.lower()
-	pattern = r"jawabannya adalah \(?([abcdefghij])\)?"
-	match = re.search(pattern, lowertext)
-	match = match.upper()
+	pattern = r"[jJ]awabannya adalah \(?([ABCDEFGHIJ])\)?"
+	match = re.search(pattern, text)
 	if match:
 		return match.group(1)
 	else:
 		return extract_again(text)
 
-
 def extract_again(text):
-	lowertext = text.lower()
-	pattern = r".*jawaban:\s*\(?([a-j])\)?"
-	match = re.search(pattern, lowertext)
-	match = match.upper()
+	pattern = r".*[jJ]awaban:\s*\(?([A-J])\)?"
+	match = re.search(pattern, text)
 	if match:
 		return match.group(1)
 	else:
 		return extract_final(text)
-
 
 def extract_final(text):
 	pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
