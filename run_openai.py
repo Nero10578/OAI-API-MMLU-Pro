@@ -520,7 +520,7 @@ def token_report():
 
 if __name__ == "__main__":
 	usage_q = queue.Queue()
-	output_dir = "eval_results/" + re.sub(r"\W", "-", config["server"]["model"])
+	output_dir = "eval_results_en/" + re.sub(r"\W", "-", config["server"]["model"])
 	os.makedirs(output_dir, exist_ok=True)
 	log_path = os.path.join(output_dir, "report.txt")
 	try:
