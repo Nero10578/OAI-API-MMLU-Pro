@@ -222,6 +222,7 @@ def extract_answer(text):
 	lowertext = text.lower()
 	pattern = r"answer is \(?([abcdefghij])\)?"
 	match = re.search(pattern, lowertext)
+	match = match.upper()
 	if match:
 		return match.group(1)
 	else:
@@ -232,6 +233,7 @@ def extract_again(text):
 	lowertext = text.lower()
 	pattern = r".*answer:\s*\(?([a-j])\)?"
 	match = re.search(pattern, lowertext)
+	match = match.upper()
 	if match:
 		return match.group(1)
 	else:
