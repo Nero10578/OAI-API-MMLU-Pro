@@ -218,33 +218,35 @@ def no_chat_prompt(cot_examples, question, options, no_system=False):
 	prompt += "Answer: " + cot_content
 	return prompt
 
-
 def extract_answer(text):
-    pattern = r"jawabannya adalah \(.*?([ABCDEFGHIJ])\)?|\[.*?([ABCDEFGHIJ])\]"
-    match = re.search(pattern, text, re.IGNORECASE)
-    if match:
-        return match.group(1) if match.group(1) else match.group(2)
-    else:
-        return extract_again(text)
+	lowertext = text.lower()
+	pattern = r"jawabannya adalah \(?([abcdefghij])\)?"
+	match = re.search(pattern, lowertext)
+	if match:
+		return match.group(1)
+	else:
+		return extract_again(text)
+
 
 def extract_again(text):
-    pattern = r".*[jJ]awaban:\s*\(?.*?([A-J])\)?|\[.*?([A-J])\]"
-    match = re.search(pattern, text, re.IGNORECASE)
-    if match:
-        return match.group(1) if match.group(1) else match.group(2)
-    else:
-        return extract_final(text)
+	lowertext = text.lower()
+	pattern = r".*jawaban:\s*\(?([a-j])\)?"
+	match = re.search(pattern, lowertext)
+	if match:
+		return match.group(1)
+	else:
+		return extract_final(text)
+
 
 def extract_final(text):
-    pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
-    match = re.search(pattern, text, re.DOTALL)
-    if match:
-        return match[0]
-    else:
-        if config["log"]["verbosity"] >= 1:
-            print("Extraction failed:\n", text)
-        return None
-
+	pattern = r"\b[A-J]\b(?!.*\b[A-J]\b)"
+	match = re.search(pattern, text, re.DOTALL)
+	if match:
+		return match[0]
+	else:
+		if config["log"]["verbosity"] >= 1:
+			print("Extraction failed:\n", text)
+		return None
 
 def run_single_question(single_question, cot_examples_dict, exist_result):
 	exist = True
