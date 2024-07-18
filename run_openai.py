@@ -94,9 +94,9 @@ def get_chat_completion(messages):
 		temperature=config["inference"]["temperature"],
 		max_tokens=config["inference"]["max_tokens"],
 		top_p=config["inference"]["top_p"],
+		stop=config["inference"]["stop"],
 		frequency_penalty=0,
 		presence_penalty=0,
-		stop=["Question:"],
 		timeout=config["server"]["timeout"],
 	)
 	try:
@@ -115,7 +115,7 @@ def get_completion(prompt):
 		top_p=config["inference"]["top_p"],
 		frequency_penalty=0,
 		presence_penalty=0,
-		stop=["Question:"],
+		stop=config["inference"]["stop"],
 		timeout=config["server"]["timeout"],
 	)
 	try:
