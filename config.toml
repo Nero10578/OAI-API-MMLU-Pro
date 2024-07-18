@@ -9,6 +9,7 @@ timeout = 600.0
 temperature = 0.0
 top_p = 1.0 # not specified but  default for VLLM
 max_tokens = 1024
+stop = "<|eot_id|>" # Change to stop token of model being tested
 
 # The variable {subject} will be replaced with appropriate value in  runtime.
 system_prompt = "You are an expert that knows everything. You are tasked with answering a multiple-choice question. The following is a multiple choice question (with answers) about {subject}. Give your final answer in the format of `The answer is (chosen answer)`."
