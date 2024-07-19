@@ -127,14 +127,14 @@ def get_completion(prompt):
 
 def load_mmlu_pro():
     test_questions = []
-    with open('MMLU-Pro-Test-ID.json', 'r') as f:
+    with open('datasets/MMLU-Pro-Test-ID.json', 'r') as f:
         for line in f:
             question = json.loads(line)
             test_questions.append(question)
     test_df = preprocess(test_questions)
 
     val_questions = []
-    with open('MMLU-Pro-Validation-ID.json', 'r') as f:
+    with open('datasets/MMLU-Pro-Validation-ID.json', 'r') as f:
         for line in f:
             question = json.loads(line)
             val_questions.append(question)

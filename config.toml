@@ -17,6 +17,9 @@ system_prompt = "You are an expert that knows everything. You are tasked with an
 # Indo system prompt
 # system_prompt = "Anda adalah seseorang yang pintar dan mengetahui segalanya. Anda diberi perintah untuk menjawab pertanyaan pilihan ganda. Berikut adalah pertanyaan pilihan ganda tentang {subject}. Jawab dengan format: 'Jawabannya adalah (pilihan jawaban)'."
 
+# Japan system prompt
+# あなたはすべてを知っている専門家です。多肢選択式の質問に回答することが求められます。次は、{subject} に関する多肢選択式の質問です。最終的な回答を「答えは (選択した回答) です」という形式で入力してください。
+
 # "single_chat" inserts all the COT examples and question into a single message. Default  style for GPT-4O script, but raises a lot of format issues especially for small models.
 # "multi_chat" inserts COT examples into multi-turn messages. Use for instruct/chat models.
 # "no_chat" uses v1/completion api. Use for non-instruct/chat model.
