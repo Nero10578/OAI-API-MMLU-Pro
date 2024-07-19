@@ -78,7 +78,7 @@ parallel = 16
 cot = true
 
 # Supported languages = en, id, ja, ko, zh
-language = en
+language = "en"
 
 [log]
 # Verbosity between 0-2
