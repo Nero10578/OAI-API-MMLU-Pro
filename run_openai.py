@@ -33,6 +33,7 @@ parser.add_argument(
 )
 parser.add_argument("-a", "--api", help="api key")
 parser.add_argument("-m", "--model", help="Model name")
+parser.add_argument("--model_note", help="Additional note on model name")
 parser.add_argument(
 	"--timeout",
 	type=float,
@@ -51,6 +52,11 @@ parser.add_argument(
 	help="Use COT instructions",
 	action="store_true",
 )
+parser.add_argument(
+	"--language",
+	help="Language of MMLU-Pro test. Default=en. Supported: en, id, ja, ko, zh",
+	default="en",
+)
 
 args = parser.parse_args()
 config = toml.load(open(args.config))
@@ -60,6 +66,8 @@ if args.api:
 	config["server"]["api_key"] = args.api
 if args.model:
 	config["server"]["model"] = args.model
+if args.model:
+	config["server"]["model_note"] = args.model
 if args.timeout:
 	config["server"]["timeout"] = args.timeout
 if args.category:
@@ -68,6 +76,8 @@ if args.parallel:
 	config["test"]["parallel"] = args.parallel
 if args.cot:
 	config["test"]["cot"] = args.cot
+if args.cot:
+	config["test"]["language"] = args.language
 if args.verbosity:
 	config["log"]["verbosity"] = args.verbosity
 if args.log_prompt:
@@ -124,24 +134,24 @@ def get_completion(prompt):
 		pass
 	return response.choices[0].text.strip()
 
-
 def load_mmlu_pro():
-    test_questions = []
-    with open('datasets/MMLU-Pro-Test.json', 'r') as f:
-        for line in f:
-            question = json.loads(line)
-            test_questions.append(question)
-    test_df = preprocess(test_questions)
+	test_questions = []
+	language = config["test"]["language"]
 
-    val_questions = []
-    with open('datasets/MMLU-Pro-Validation.json', 'r') as f:
-        for line in f:
-            question = json.loads(line)
-            val_questions.append(question)
-    val_df = preprocess(val_questions)
+	with open(f'datasets/MMLU-Pro-Test-{language}.json', 'r') as f:
+		for line in f:
+			question = json.loads(line)
+			test_questions.append(question)
+	test_df = preprocess(test_questions)
+
+	val_questions = []
+	with open(f'datasets/MMLU-Pro-Validation-{language}.json', 'r') as f:
+		for line in f:
+			question = json.loads(line)
+			val_questions.append(question)
+	val_df = preprocess(val_questions)
     
-    return test_df, val_df
-
+	return test_df, val_df
 
 def preprocess(test_df):
 	res_df = []
@@ -162,11 +172,33 @@ def preprocess(test_df):
 
 
 def format_example(question, options, cot_content=""):
+	language = config["test"]["language"]
 	if cot_content == "":
-		cot_content = "Let's think step by step."
+		if language == "en":
+			cot_content = "Let's think step by step."
+		elif language == "id":
+			cot_content = "Mari berpikir selangkah demi selangkah."
+		elif language == "ja":
+			cot_content = "段階的に考えてみましょう。"
+		elif language == "ko":
+			cot_content = "단계별로 생각해 봅시다."
+		elif language == "zh":
+			cot_content = "让我们一步一步思考。"
+
 	if cot_content.startswith("A: "):
 		cot_content = cot_content[3:]
-	example = "Question: {}\nOptions: ".format(question)
+	
+	if language == "en":
+		example = "Question: {}\nOptions: ".format(question)
+	elif language == "id":
+		example = "Pertanyaan: {}\nPilihan: ".format(question)
+	elif language == "ja":
+		example = "質問: {}\n選択肢: ".format(question)
+	elif language == "ko":
+		example = "질문: {}\n선택지: ".format(question)
+	elif language == "zh":
+		example = "问题：{}\n选项: ".format(question)
+	
 	choice_map = "ABCDEFGHIJ"
 	for i, opt in enumerate(options):
 		example += "{}. {}\n".format(choice_map[i], opt)
@@ -219,7 +251,19 @@ def no_chat_prompt(cot_examples, question, options, no_system=False):
 	return prompt
 
 def extract_answer(text):
-	pattern = r"[aA]nswer is \(?([ABCDEFGHIJ])\)?"
+	language = config["test"]["language"]
+
+	if language == "en":
+		pattern = r"Answer is \(?([ABCDEFGHIJ])\)?"
+	elif language == "id":
+		pattern = r"Jawaban adalah \(?([ABCDEFGHIJ])\)?"
+	elif language == "ja":
+		pattern = r"答えは \(?([ABCDEFGHIJ])\)? です"
+	elif language == "ko":
+		pattern = r"대답은 \(?([ABCDEFGHIJ])\)?"
+	elif language == "zh":
+		pattern = r"答案是 \(?([ABCDEFGHIJ])\)?"
+
 	match = re.search(pattern, text)
 	if match:
 		return match.group(1)
@@ -227,7 +271,19 @@ def extract_answer(text):
 		return extract_again(text)
 
 def extract_again(text):
-	pattern = r".*[aA]nswer:\s*\(?([A-J])\)?"
+	language = config["test"]["language"]
+
+	if language == "en":
+		pattern = r".*Answer is:\s*\(?([A-J])\)?"
+	elif language == "id":
+		pattern = r".*Jawaban adalah:\s*\(?([A-J])\)?"
+	elif language == "ja":
+		pattern = r".*答えは:\s*\(?([A-J])\)?"
+	elif language == "ko":
+		pattern = r".*대답은:\s*\(?([A-J])\)?"
+	elif language == "zh":
+		pattern = r".*答案是:\s*\(?([A-J])\)?"
+
 	match = re.search(pattern, text)
 	if match:
 		return match.group(1)
@@ -519,8 +575,9 @@ def token_report():
 
 
 if __name__ == "__main__":
+	language = config["test"]["language"]
 	usage_q = queue.Queue()
-	output_dir = "eval_results_en/" + re.sub(r"\W", "-", config["server"]["model"])
+	output_dir = f"eval_results_{language}/" + re.sub(r"\W", "-", config["server"]["model"]) + re.sub(r"\W", "-", config["server"]["model_note"])
 	os.makedirs(output_dir, exist_ok=True)
 	log_path = os.path.join(output_dir, "report.txt")
 	try:

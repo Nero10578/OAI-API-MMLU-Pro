@@ -40,6 +40,7 @@ You can also override   settings in configuration file    with  command line fla
 url = "http://localhost:8000/v1"
 api_key = "api key"
 model = "llama3"
+model_note = "LORA"
 timeout = 600.0
 
 [inference]
@@ -58,6 +59,12 @@ system_prompt = "You are an expert that knows everything. You are tasked with an
 # Japan system prompt
 # system_prompt = "あなたはすべてを知っている専門家です。多肢選択式の質問に回答することが求められます。次は、{subject} に関する多肢選択式の質問です。最終的な回答を「答えは (選択した回答) です」という形式で入力してください。"
 
+# Korean system prompt
+# system_prompt = "당신은 모든 것을 아는 전문가입니다. 당신은 객관식 질문에 답하는 임무를 맡고 있습니다. 다음은 {subject}에 관한 객관식 질문(답변 포함)입니다. 최종 답변은 '대답은 (선택된 답변)' 형식으로 작성해 주세요."
+
+# Chinese system prompt
+# system_prompt = "你是一位无所不知的专家。你的任务是回答一道多项选择题。以下是一道关于{subject}的多项选择题（附答案）。请以“答案是（选定答案）”的格式给出你的最终答案。"
+
 # "single_chat" inserts all the COT examples and question into a single message. Default  style for GPT-4O script, but raises a lot of format issues especially for small models.
 # "multi_chat" inserts COT examples into multi-turn messages. Use for instruct/chat models.
 # "no_chat" uses v1/completion api. Use for non-instruct/chat model.
@@ -66,7 +73,12 @@ style = "multi_chat"
 [test]
 categories = ['biology', 'business', 'chemistry', 'computer science', 'economics', 'engineering', 'health', 'history', 'law', 'math', 'philosophy', 'physics', 'psychology', 'other']
 parallel = 16
+
+# Use chain of thoughts prompting or no.
 cot = true
+
+# Supported languages = en, id, ja, ko, zh
+language = en
 
 [log]
 # Verbosity between 0-2
