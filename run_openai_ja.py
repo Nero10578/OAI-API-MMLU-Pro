@@ -53,7 +53,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-config = toml.load(open(args.config))
+config = toml.load(open(args.config, encoding='utf-8'))
 if args.url:
 	config["server"]["url"] = args.url
 if args.api:
