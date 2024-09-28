@@ -460,17 +460,17 @@ def save_res(res, output_res_path, lock):
             fo.write(json.dumps(res, indent="\t"))
 
 
-def print_score(label, corr, wrong):
+def print_score(label, correct, wrong, total=None):
     try:
-        corr = int(corr)
+        correct = int(correct)
         wrong = int(wrong)
-        total = corr + wrong
+        total = total if total is not None else correct + wrong
         if total > 0:
-            acc = corr / total * 100
+            percentage = correct / total * 100
         else:
-            acc = 0.0
+            percentage = 0.0
 
-        log(f"{label}, {corr}/{total}, {acc:.2f}%")
+        log(f"{label}, {correct}/{total}, {percentage:.2f}%")
     except Exception as e:
         log(f"{label}, {e} error")
 
@@ -498,8 +498,11 @@ def save_summary(category_record, output_summary_path, lock, report=False):
     }
     if report:
         print_score("Total", total_corr, total_wrong)
-        print(
-            f"No answer: {int(total_no_answer)}"
+        print_score(
+            "No Answer",
+            total_no_answer,
+            total_questions - total_no_answer,  # wrong + correct = total
+            total_questions
         )
     with lock:
         with open(output_summary_path, "w") as fo:
@@ -524,11 +527,16 @@ def final_report(assigned_subjects):
         total_wrong += cat_wrong
         total_no_answer += cat_no_answer
         scores.append(cat_corr / (cat_corr + cat_wrong))
+    
     total_questions = total_corr + total_wrong
     print_score("Total", total_corr, total_wrong)
-    print(
-        f"No answer: {int(total_no_answer)}"
+    print_score(
+        "No Answer",
+        total_no_answer,
+        total_questions - total_no_answer,
+        total_questions
     )
+    
     scores.insert(0, total_corr / total_questions if total_questions > 0 else 0.0)
     scores = [f"{score*100:.2f}" for score in scores]
     table += "| " + " | ".join(scores) + " |"
