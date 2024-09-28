@@ -348,9 +348,13 @@ def update_result(output_res_path, lock):
                         for each in res:
                             category = each["category"]
                             if category not in category_record:
-                                category_record[category] = {"corr": 0.0, "wrong": 0.0}
-                            if each["pred"] is None:  # If the answer is missing
-                                category_record[category]["wrong"] += 1  # Count as wrong
+                                category_record[category] = {
+                                    "corr": 0.0,
+                                    "wrong": 0.0,
+                                    "not_found": 0.0  # Track not found answers
+                                }
+                            if each["pred"] is None:  # Answer couldn't be found
+                                category_record[category]["not_found"] += 1  # Increment not found
                             elif each["pred"] == each["answer"]:  # Correct answer
                                 category_record[category]["corr"] += 1
                             else:  # Wrong answer
@@ -359,6 +363,7 @@ def update_result(output_res_path, lock):
         except Exception as e:
             print("Error", e)
     return res, category_record
+
 
 
 def evaluate(subjects):
@@ -462,25 +467,43 @@ def print_score(label, corr, wrong):
 def save_summary(category_record, output_summary_path, lock, report=False):
     total_corr = 0.0
     total_wrong = 0.0
+    total_not_found = 0.0  # To track when answers can't be found
+    total_answered = 0.0  # To track total answered cases (corr + wrong)
+
     for k, v in category_record.items():
         if k == "total":
             continue
-        cat_acc = v["corr"] / (v["corr"] + v["wrong"])
+        cat_acc = v["corr"] / (v["corr"] + v["wrong"] + v.get("not_found", 0.0))  # Including not found in total
         category_record[k]["acc"] = cat_acc
         total_corr += v["corr"]
         total_wrong += v["wrong"]
+        total_not_found += v.get("not_found", 0.0)  # Adding not found answers
+
+    total_answered = total_corr + total_wrong  # Total number of questions answered correctly or incorrectly
 
     if total_corr > 0.0:
-        acc = total_corr / (total_corr + total_wrong)
+        acc = total_corr / (total_corr + total_wrong + total_not_found)  # Overall accuracy including not found cases
     else:
         acc = 0.0
-        
-    category_record["total"] = {"corr": total_corr, "wrong": total_wrong, "acc": acc}
+
+    if total_answered > 0.0:
+        answered_acc = total_corr / total_answered  # Accuracy excluding not found cases
+    else:
+        answered_acc = 0.0
     
+    category_record["total"] = {
+        "corr": total_corr,
+        "wrong": total_wrong,
+        "not_found": total_not_found,
+        "acc": acc,
+        "answered_acc": answered_acc
+    }
+
     if report:
         print_score("Total", total_corr, total_wrong)
+        print_score("Can't Find Answer", total_not_found, total_corr + total_wrong + total_not_found)
+        print_score("Answered Accuracy", total_corr, total_wrong)
 
-    # Write summary to file
     with lock:
         with open(output_summary_path, "w") as fo:
             fo.write(json.dumps(category_record, indent="\t"))
@@ -489,6 +512,8 @@ def save_summary(category_record, output_summary_path, lock, report=False):
 def final_report(assigned_subjects):
     total_corr = 0.0
     total_wrong = 0.0
+    total_not_found = 0.0
+    total_answered = 0.0
     names = ["overall"] + assigned_subjects
     table = "| " + " | ".join(names) + " |\n"
     separators = [re.sub(r".", "-", name) for name in names]
@@ -501,19 +526,26 @@ def final_report(assigned_subjects):
         total_corr += cat_corr
         cat_wrong = res["total"]["wrong"]
         total_wrong += cat_wrong
-        scores.append(cat_corr / (cat_corr + cat_wrong))
+        cat_not_found = res["total"]["not_found"]
+        total_not_found += cat_not_found
+
+        total_answered += (cat_corr + cat_wrong)
+        scores.append(cat_corr / (cat_corr + cat_wrong + cat_not_found))  # Overall accuracy including not found
 
     # Print total score
     print_score("Total", total_corr, total_wrong)
+    print_score("Can't Find Answer", total_not_found, total_corr + total_wrong + total_not_found)
+    
+    if total_answered > 0:
+        print_score("Answered Accuracy", total_corr, total_wrong)  # Accuracy for answered questions only
 
-    scores.insert(0, total_corr / (total_corr + total_wrong))
+    scores.insert(0, total_corr / (total_corr + total_wrong + total_not_found))  # Overall accuracy
     scores = [f"{score*100:.2f}" for score in scores]
     table += "| " + " | ".join(scores) + " |"
-    
+
     token_report()
     log("Markdown Table:")
     log(table)
-
 
 
 def elapsed(start):
