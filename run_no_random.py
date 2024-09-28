@@ -501,9 +501,9 @@ def save_summary(category_record, output_summary_path, lock, report=False):
     }
 
     if report:
-        print_score("Total Score (Counting Not-Found as Wrong)", total_corr, total_wrong + total_not_found)
-        print_score("Can't Find Answer", total_not_found, total_questions)
-        print_score("Answered Score", total_corr, total_wrong)
+        print_score("Total Score", total_corr, total_wrong + total_not_found)
+        print_score("Answer not found", total_not_found, total_questions)
+        print_score("Answered-only Score", total_corr, total_wrong)
 
     with lock:
         with open(output_summary_path, "w") as fo:
@@ -533,11 +533,11 @@ def final_report(assigned_subjects):
 
         scores.append(cat_corr / (cat_corr + cat_wrong + cat_not_found))
 
-    print_score("Total Score (Counting Not-Found as Wrong)", total_corr, total_wrong + total_not_found)
-    print_score("Can't Find Answer", total_not_found, total_questions)
+    print_score("Total Score", total_corr, total_wrong + total_not_found)
+    print_score("Answer not found", total_not_found, total_questions)
 
     if total_corr + total_wrong > 0:
-        print_score("Answered Score (Excluding Not Found)", total_corr, total_wrong) 
+        print_score("Answered-only Score", total_corr, total_wrong) 
 
     scores.insert(0, total_corr / total_questions)
     scores = [f"{score*100:.2f}" for score in scores]
